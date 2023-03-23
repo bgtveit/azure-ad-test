@@ -28,33 +28,35 @@ function App() {
     instance
       .acquireTokenSilent(request)
       .then((response) => {
-        callMsGraphIsMemberOf(response.accessToken, "GiveAccess").then(
-          (response: any) => {
+        callMsGraphIsMemberOf(
+          response.accessToken,
+          import.meta.env.VITE_AZURE_AD_GROUPNAME
+        ).then((response: any) => {
+          let returned: any[] = response.value;
+          returned.length === 0
+            ? setIsAuthorized(false)
+            : setIsAuthorized(true);
+        });
+      })
+      .catch((e) => {
+        instance.acquireTokenPopup(request).then((response) => {
+          callMsGraphIsMemberOf(
+            response.accessToken,
+            import.meta.env.VITE_AZURE_AD_GROUPNAME
+          ).then((response: any) => {
             let returned: any[] = response.value;
             returned.length === 0
               ? setIsAuthorized(false)
               : setIsAuthorized(true);
-          }
-        );
-      })
-      .catch((e) => {
-        instance.acquireTokenPopup(request).then((response) => {
-          callMsGraphIsMemberOf(response.accessToken, "GiveAccess").then(
-            (response: any) => {
-              let returned: any[] = response.value;
-              returned.length === 0
-                ? setIsAuthorized(false)
-                : setIsAuthorized(true);
-            }
-          );
+          });
         });
       });
     return false;
   };
 
-  const visibleTodos = useMemo(() => {
+  const visibleTodos = useEffect(() => {
     checkAuthorization();
-  }, []);
+  });
 
   return (
     <div className="App">
